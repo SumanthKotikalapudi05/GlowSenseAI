@@ -26,8 +26,10 @@ def analyze():
     img_path = os.path.join('static/uploads', image.filename)
     image.save(img_path)
 
-    # YOLO prediction
+    # Load model here instead of globally
+    model = YOLO("model/best.pt")
     results = model.predict(source=img_path, save=True, conf=0.4)
+
     detections = results[0].boxes.cls.tolist()
     names = [model.names[int(cls)] for cls in detections]
 
@@ -40,12 +42,7 @@ def analyze():
             [f"- {SKINCARE_TIPS.get(name, 'No tips available for this condition.')}" for name in set(names)]
         )
 
-    return render_template(
-        'result.html',
-        image=image.filename,
-        summary=summary,
-        tips=tips
-    )
+    return render_template('result.html', image=image.filename, summary=summary, tips=tips)
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
